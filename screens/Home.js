@@ -1,11 +1,11 @@
-
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Button, Alert, ScrollView, ListView} from 'react-native';
-import CheckBox from 'react-native-check-box';
+import { View, Text, StyleSheet, TextInput,TouchableOpacity, Button, Alert, ScrollView, ListView} from 'react-native';
+import { CheckBox } from 'react-native-elements';
 import firebase from '../firebase';
 import Swipeout from 'react-native-swipeout';
 import Head from '../components/Head';
 import { AuthSession } from 'expo';
+import { Ionicons } from '@expo/vector-icons';
 
 var Dimensions = require('Dimensions');
 var {height, width} = Dimensions.get('window');
@@ -15,11 +15,23 @@ var {height, width} = Dimensions.get('window');
 export default class Home extends Component{
 
 
-  carDatabase = firebase.database().ref('cars');
-  state = {cars: {}, selectedID: '', color: 'yellow', checked: false}
+  todoDatabase = firebase.database().ref('todos');
+  state = {todos: {}, selectedId: '', checked: false, done: false, colorVal:'black'}
 
   handleOnChange(val) {
     this.setState({ checked: val })
+  }
+
+  showConfirmAlert() {
+    Alert.alert(
+      'Delete?',
+      '',
+      [
+        {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+        {text: 'Delete', onPress: () => {this.deleteList()}},
+      ],
+      { cancelable: false }
+    )
   }
   
 
@@ -43,7 +55,7 @@ export default class Home extends Component{
                     },
                     {
                       text: "Delete",
-                      onPress: () => {this.deleteCar(this.state.selectedID)}
+                      onPress: () => {this.deleteList(this.state.selectedId)}
                   
                       
                     }
@@ -54,30 +66,42 @@ export default class Home extends Component{
           
         }
       ]
-    this.carDatabase.on('value', cars=> {
-      const carsJSON = cars.val();
-      this.setState({ cars: carsJSON === null ? {} : carsJSON});
+    this.todoDatabase.on('value', todos=> {
+      const todosJSON = todos.val();
+      this.setState({ todos: todosJSON === null ? {} : todosJSON});
     })
     
   }
 
   create(payload){
     console.log(payload);
-    this.carDatabase.push({color: payload});
+    this.todoDatabase.push({task: payload});
   }
 
-  update(id, payload){
-      this.carDatabase.child(this.state.selectedId).set({color: 'blue'});
+  update(payload, state){
+    console.log("payload:"+ payload.todoId);
+    console.log("done"+ this.state.done);
+
+    if(!this.state.done){
+      // this.setState({colorVal:'gray'})
+      this.todoDatabase.child(payload.todoId).update({done: true});
+      console.log("done"+ this.state.done);
+    }else{
+      // this.setState({colorVal:'black'})
+      this.todoDatabase.child(payload.todoId).update({done: false});
+    }
+      // this.todoDatabase.child(payload.todoId).set({color: 'blue'});
       this.setState({selectedId: ''})
+      console.log("done2"+ this.state.done);
 
   }
 
-  deleteCar(payload){
+  deleteList(payload){
     if(this.state.selectedId ===''){
         return;
     }
-    console.log("selectedID"+ this.state.selectedId);
-    this.carDatabase.child(this.state.selectedId).remove();
+    console.log("selectedId"+ payload);
+    this.todoDatabase.child(this.state.selectedId).remove();
     this.setState({selectedId : ''})
   
   }
@@ -95,40 +119,91 @@ render(){
              */}
                 
                 {
-                Object.keys(this.state.cars).map((carsId, index) =>
+                Object.keys(this.state.todos).map((todoId, index) =>
 
                 
                 
-                //   <TouchableOpacity key={index} onPress= {() => this.setState({ selectedId: carsId})}>
+                //   <TouchableOpacity key={index} onPress= {() => this.setState({ selectedId: todoId})}>
 
                 //     <Text>{
-                //        `${carsId}: ${JSON.stringify(this.state.cars[carsId])}`
+                //        `${todoId}: ${JSON.stringify(this.state.todos[todoId])}`
                         
                 //         }</Text>
                 //   </TouchableOpacity>
 
                 
                     <Swipeout key={index} right={swipeoutBtns} style={styles.swipeBox} >
-                        <View selectedId= {this.state.carsId}
+                       
+                        <View 
                         style={styles.checkList}>
-                            <Text style={styles.text}>{
-                                `${JSON.stringify(this.state.cars[carsId].color).slice(1, -1)}`
-                            }</Text>
-                            <CheckBox
+                          <CheckBox
+                            
+                            textColor="#000"
+                            fillColor="red"
+                            value={index}
+                            checked={this.state.checked}
+                            onPress={() => this.setState({checked: !this.state.checked})}
+                          />
+                         
+                         
+
+                            <Text style={styles.text, {color: this.state.colorVal}}>{
+                                `${JSON.stringify(this.state.todos[todoId].task).slice(1, -1)}`
+                            }</Text> 
+
+                          
+                            {/* <Button title="AAA"
                               style={{flex: 1, padding: 10}}
-                              onClick={()=>{
+                              onPress={()=>{
                                 this.setState({
                                     isChecked:!this.state.isChecked,
-                                    selectedId: carsId
-                                  })
-                              }}
+                                    selectedId: todoId
+                                  }),
+                                  this.deleteList(todoId)} 
+                            
+                              }
                               isChecked={this.state.isChecked}
-                             
+                              /> */}
+
+                     
+                            <Button
+                              onPress={() => {
+                                this.setState({
+                                    isChecked:!this.state.isChecked,
+                                    selectedId: todoId
+                                  }),
+                                  this.showConfirmAlert()} 
+                            
+                              }
+                              title="Delete"
+                              color="#841584"
+                              accessibilityLabel="Delete?"
+                            />
+                            <Button
+                              onPress={() => {
+                                this.setState({
+
+                                    done:this.state.done
+                                  }),
+                                  this.update({todoId})} 
+                            
+                              }
+                              title="Update"
+                              color="#841584"
                               
-                          />
-                           <Button title="Delete" onPress={() => 
-                           
-                            this.deleteCar({carsId})}></Button>
+                            />
+
+                              
+                            <Ionicons name="md-checkmark-circle" size={32} color="green" onPress={() => this.update(todoId)} />
+                           {/* <Button title="updateTest"  onPress={() => {
+                                this.setState({
+                                    isChecked:!this.state.isChecked,
+                                    selectedId: this.state.selectedId
+                                  }),
+                                  this.update()} 
+                            
+                              }
+                            /> */}
 
                         </View>
                        
@@ -138,7 +213,6 @@ render(){
 
 </ScrollView>
         
-        <Button title="Update" onPress={() => this.update()}></Button>
         
 
       <View style={styles.bottomContainer}>
@@ -156,7 +230,7 @@ render(){
         </View>
       </View>
      
-      {/* <Text>{JSON.stringify(this.state.cars)}</Text> */}
+      {/* <Text>{JSON.stringify(this.state.todos)}</Text> */}
     </View>
   )
 }
