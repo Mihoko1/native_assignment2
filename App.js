@@ -1,31 +1,46 @@
 import React from 'react';
 import { StyleSheet, Text, View, Button } from 'react-native';
-import {
-    createSwitchNavigator,
-    createAppContainer,
-    SafeAreaView
+import {createSwitchNavigator,createAppContainer,SafeAreaView
 } from 'react-navigation';
 
-import { createBottomTabNavigator} from 'react-navigation-tabs';
+import {createBottomTabNavigator} from 'react-navigation-tabs';
 import {createStackNavigator} from 'react-navigation-stack'
 import {createDrawerNavigator, DrawerItems} from 'react-navigation-drawer'
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-//パーツ読み込み
 import Home from './screens/Home';
 import Profile from './screens/Profile';
 import Login from './screens/Login';
 import SignUp from './screens/SignUp';
 
-import { isSignedIn, onSignOut } from "./auth";
-
 const HomeTab = createBottomTabNavigator(
   {
       Home: { screen: createStackNavigator({ Home: { screen: Home } }) },
       Profile: { screen: createStackNavigator({ Profile: { screen: Profile } }) }
+  },
+  {
+    defaultNavigationOptions: ({ navigation }) => ({
+      tabBarIcon: ({ focused, horizontal, tintColor }) => {
+        const { routeName } = navigation.state;
+        let IconComponent = Ionicons;
+        let iconName;
+        if (routeName === 'Home') {
+          iconName = `ios-home`;
+          
+        } else if (routeName === 'Profile') {
+          iconName = `md-happy`;
+        }
+        // You can return any component that you like here!
+        return <IconComponent name={iconName} size={25} color={tintColor} />;
+      },
+    }),
+    tabBarOptions: {
+      activeTintColor: '#d81b60',
+      inactiveTintColor: 'gray',
+    },
   }
 );
 
-//DrawerをかましてHomeTabを表示
 const SignedIn = createDrawerNavigator(
   {
       Home: { screen: HomeTab }
@@ -33,7 +48,7 @@ const SignedIn = createDrawerNavigator(
   {
       contentComponent: (props) => (
           <View style={{ flex: 1 }}>
-              <SafeAreaView forceInset={{ top: 'always', horizontal: 'never' }}>
+              <SafeAreaView style={{ flex:1, backgroundColor: '#3a2995' }}>
                   <DrawerItems {...props} />
                   <Button
                       title="Logout"
@@ -45,7 +60,7 @@ const SignedIn = createDrawerNavigator(
   }
 );
 
-//SignOut時の標準画面
+
 const SignedOut = createStackNavigator(
   {
       SignUp: { screen: SignUp },
@@ -53,7 +68,7 @@ const SignedOut = createStackNavigator(
   }
 );
 
-//Switchを定義
+
 const createRootNavigator = (signedIn = false) => {
   return createSwitchNavigator(
       {
@@ -66,10 +81,26 @@ const createRootNavigator = (signedIn = false) => {
   );
 }
 
-//AppContainerでラップ（RN v3より）
+
 const Layout = createAppContainer(createRootNavigator(true));
 
 export default class App extends React.Component {
+
+     static navigationOptions = ()=>({
+        title: 'Hi Miho',
+        //Sets Header text of Status Bar
+        headerStyle: {
+          backgroundColor: '#e8c121',
+          //Sets Header color
+        },
+        headerTintColor: '#e8c121',
+        //Sets Header text color
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          //Sets Header text style
+        },
+      });
+      
   render() {
       return (
           <Layout />

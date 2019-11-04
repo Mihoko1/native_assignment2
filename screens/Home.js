@@ -1,26 +1,28 @@
 import React, { Component } from 'react';
 import { View, Text, StyleSheet, TextInput,TouchableOpacity, Button, Alert, ScrollView, ListView} from 'react-native';
-import { CheckBox } from 'react-native-elements';
 import firebase from '../firebase';
-import Swipeout from 'react-native-swipeout';
 import Head from '../components/Head';
-import { AuthSession } from 'expo';
-import { Ionicons } from '@expo/vector-icons';
 
 var Dimensions = require('Dimensions');
-var {height, width} = Dimensions.get('window');
-
-
+var {width} = Dimensions.get('window');
 
 export default class Home extends Component{
 
+  static navigationOptions = ()=>({
+    title: 'Hi Miho!',
+    headerStyle: {
+      backgroundColor: '#3a2995',
+      
+    },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  });
+  
 
   todoDatabase = firebase.database().ref('todos');
   state = {todos: {}, selectedId: '', checked: false, done: false, colorVal:'black'}
-
-  handleOnChange(val) {
-    this.setState({ checked: val })
-  }
 
   showConfirmAlert() {
     Alert.alert(
@@ -34,38 +36,8 @@ export default class Home extends Component{
     )
   }
   
-
   componentDidMount(){
 
-
-    swipeoutBtns = [
-        {
-          text: 'Delete',
-          backgroundColor: 'red',
-          
-
-              onPress: () => {
-                Alert.alert(
-                  "Delete？",
-                  "",
-                  [
-                    {
-                      text: "Cancel",
-                      style: "cancel"
-                    },
-                    {
-                      text: "Delete",
-                      onPress: () => {this.deleteList(this.state.selectedId)}
-                  
-                      
-                    }
-                  ],
-                  { cancelable: false }
-                );
-              }
-          
-        }
-      ]
     this.todoDatabase.on('value', todos=> {
       const todosJSON = todos.val();
       this.setState({ todos: todosJSON === null ? {} : todosJSON});
@@ -75,261 +47,219 @@ export default class Home extends Component{
 
   create(payload){
     console.log(payload);
+    if(payload == null){
+      return;
+    }
+
     this.todoDatabase.push({task: payload});
+
   }
 
   update(payload, state){
     console.log("payload:"+ payload.todoId);
-    console.log("done"+ this.state.done);
+    console.log("done"+ state);
 
     if(!this.state.done){
-      // this.setState({colorVal:'gray'})
+ 
       this.todoDatabase.child(payload.todoId).update({done: true});
-      console.log("done"+ this.state.done);
+      this.setState({done: true})
+      console.log("donefalse:"+ this.state.done);
     }else{
-      // this.setState({colorVal:'black'})
+ 
       this.todoDatabase.child(payload.todoId).update({done: false});
+      this.setState({done: false})
+      console.log("doneTrue:"+ this.state.done);
     }
-      // this.todoDatabase.child(payload.todoId).set({color: 'blue'});
       this.setState({selectedId: ''})
-      console.log("done2"+ this.state.done);
-
   }
 
   deleteList(payload){
     if(this.state.selectedId ===''){
         return;
     }
-    console.log("selectedId"+ payload);
     this.todoDatabase.child(this.state.selectedId).remove();
     this.setState({selectedId : ''})
-  
   }
 
-render(){
+  render(){
+    return(
+      <View style = {styles.container}>
+          <Head />
+          <ScrollView style={styles.scrollContainer}>
 
-    
-  return(
-    <View style = {styles.container}>
-        <Head />
-        <ScrollView style={styles.scrollContainer}>
+            {
+              Object.keys(this.state.todos).map((todoId, index) =>
 
-                
-                {/* <TextInput style={styles.textInput} value={this.state.selectedId}></TextInput>
-             */}
-                
-                {
-                Object.keys(this.state.todos).map((todoId, index) =>
+              <View key={index}  style={styles.listBox} >
 
-                
-                
-                //   <TouchableOpacity key={index} onPress= {() => this.setState({ selectedId: todoId})}>
+                <View style={styles.checkList}>
+                  {
+                    (JSON.stringify(this.state.todos[todoId].done) !== 'false' ) ? (
 
-                //     <Text>{
-                //        `${todoId}: ${JSON.stringify(this.state.todos[todoId])}`
-                        
-                //         }</Text>
-                //   </TouchableOpacity>
+                      <Text style={styles.todoText, {color: 'black', width: width - 120}}>{
+                            `${JSON.stringify(this.state.todos[todoId].task).slice(1, -1)}`
+                      }</Text> 
 
-                
-                    <Swipeout key={index} right={swipeoutBtns} style={styles.swipeBox} >
-                       
-                        <View 
-                        style={styles.checkList}>
-                          <CheckBox
-                            
-                            textColor="#000"
-                            fillColor="red"
-                            value={index}
-                            checked={this.state.checked}
-                            onPress={() => this.setState({checked: !this.state.checked})}
-                          />
-                         
-                         
+                    ):(
+                        <Text style={styles.todoText, {color: '#bebebe', width: width - 120}}>{
+                          `${JSON.stringify(this.state.todos[todoId].task).slice(1, -1)}`
+                      }</Text> 
+                    )
+                  }
+                    
+                  <View style={styles.btnContainer}>
+                    <TouchableOpacity
+                      style={styles.doneBtn}
+                      onPress={() => {
+                        this.setState({
+                            done:this.state.done
+                          }),
+                          this.update({todoId})} 
+                      }
+                      underlayColor='#fff'>
+                      <Text style={styles.btnText}>Done</Text>
+                    </TouchableOpacity>
 
-                            <Text style={styles.text, {color: this.state.colorVal}}>{
-                                `${JSON.stringify(this.state.todos[todoId].task).slice(1, -1)}`
-                            }</Text> 
-
-                          
-                            {/* <Button title="AAA"
-                              style={{flex: 1, padding: 10}}
-                              onPress={()=>{
-                                this.setState({
-                                    isChecked:!this.state.isChecked,
-                                    selectedId: todoId
-                                  }),
-                                  this.deleteList(todoId)} 
-                            
-                              }
-                              isChecked={this.state.isChecked}
-                              /> */}
-
-                     
-                            <Button
-                              onPress={() => {
-                                this.setState({
-                                    isChecked:!this.state.isChecked,
-                                    selectedId: todoId
-                                  }),
-                                  this.showConfirmAlert()} 
-                            
-                              }
-                              title="Delete"
-                              color="#841584"
-                              accessibilityLabel="Delete?"
-                            />
-                            <Button
-                              onPress={() => {
-                                this.setState({
-
-                                    done:this.state.done
-                                  }),
-                                  this.update({todoId})} 
-                            
-                              }
-                              title="Update"
-                              color="#841584"
-                              
-                            />
-
-                              
-                            <Ionicons name="md-checkmark-circle" size={32} color="green" onPress={() => this.update(todoId)} />
-                           {/* <Button title="updateTest"  onPress={() => {
-                                this.setState({
-                                    isChecked:!this.state.isChecked,
-                                    selectedId: this.state.selectedId
-                                  }),
-                                  this.update()} 
-                            
-                              }
-                            /> */}
-
-                        </View>
-                       
-                    </Swipeout>
-                )
+                    <TouchableOpacity
+                      style={styles.deleteBtn}
+                      onPress={() => {
+                        this.setState({
+                            isChecked:!this.state.isChecked,
+                            selectedId: todoId
+                          }),
+                          this.showConfirmAlert()} 
+                      }
+                      underlayColor='#fff'>
+                      <Text style={styles.btnText}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+              )
             }
-
-</ScrollView>
+          </ScrollView>
         
-        
-
-      <View style={styles.bottomContainer}>
-        <View style={styles.inputContainer}>
-            <View style={styles.listInline}>
-                <TextInput
-                placeholder="Create new list"
-                style={styles.createListInput}
-                onChangeText={(color) => this.setState({color})}
+          <View style={styles.bottomContainer}>
+            <View style={styles.inputContainer}>
+                <View>
+                    <TextInput
+                    placeholder="Create new list"
+                    style={styles.createListInput}
+                    onChangeText={(color) => this.setState({color})}
+                  
+                    />
+                </View>
+                <TouchableOpacity
+                      style={styles.listInline}
+                      onPress={() => this.create(this.state.color)}
+                      underlayColor='#fff'>
+                      <Text style={styles.btnText}>Create</Text>
+                    </TouchableOpacity>
                
-                />
             </View>
-
-            <Button style={styles.listInline} title="Create" onPress={() => this.create(this.state.color)}></Button>
-        </View>
+          </View>
       </View>
-     
-      {/* <Text>{JSON.stringify(this.state.todos)}</Text> */}
-    </View>
-  )
-}
-
-
+    )
+  }
  }
 
-//  interface DeleteButtonProps {
-//     onPress: () => void;
-//   }
-  
-  // const DeleteButton = (props: DeleteButtonProps) => (
-  //   <TouchableOpacity onPress={props.onPress}>
-  //     <View
-  //       style={{
-         
-  //         justifyContent: "center",
-  //         alignItems: "center",
-  
-          
-  //       }}
-  //     >
-        
-  //     </View>
-  //     <Text style={styles.deleteBtn, { color: "white", fontWeight: "bold" }}>Delete</Text>
-  //   </TouchableOpacity>
-  // );
-
 const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#fff',
+      alignItems: 'center',
+      
+    },
     scrollContainer:{
         height: -100,
         width: '100%',
     },
+
     textInput: {
-        backgroundColor: 'green',
+        backgroundColor: '#ddca6c',
         height: 30,
         width: '100%',
     },
     bottomContainer:{
-      backgroundColor: 'black',
+      backgroundColor: '#93c8f2',
       borderStyle: "solid",
-      height: 80,
+      height: 85,
       width: width,
       alignItems: 'center',
     },
     createListInput: {
-        backgroundColor: 'white',
-        borderStyle: "solid",
-        borderColor: 'pink',
-        height: 50,
-        
-        width: width - 100,
-        
-    },
-    container: {
-        flex: 1,
         backgroundColor: '#fff',
-        alignItems: 'center',
-        
+        borderStyle: "solid",
+        borderColor: '#3a2995',
+        height: 50,
+        width: width - 100,
+        paddingLeft: 10,     
     },
-    text: {
-        fontSize: 18,
-        textAlignVertical: 'center'
-
+    todoText: {
+        textAlignVertical: 'center',
     },
     box: {
         width: '100%',
         height: 30,
-        backgroundColor: 'green',
+        backgroundColor: '#ddca6c',
         top: 0
     },
-    swipeBox: {
+    listBox: {
         width: '100%',
         backgroundColor: 'white',
         borderBottomColor: 'gray',
         borderBottomWidth: 0.5,
         paddingTop: 5,
         paddingBottom: 5,
-        paddingLeft: 10,
-      paddingRight:10,
-
-        
+        paddingLeft: 30,
+        paddingRight:10,   
     },
     checkList:{
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
     },
-
     inputContainer: {
-        position: 'absolute',
-        bottom: 20,
-        backgroundColor: 'pink',
-        flex: 1, 
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
+      position: 'absolute',
+      bottom: 20,
+      backgroundColor: '#3a2995',
+      tintColor: '#fff',
+      flex: 1, 
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    listInline:{
+      color: '#fff',
+    },
+    btnContainer:{
+      marginTop: 5,
+      marginBottom: 5,
     },
 
+    deleteBtn:{
+      paddingTop:10,
+      paddingBottom:10,
+      backgroundColor:'#d81b60',
+      borderRadius:10,
+      borderWidth: 1,
+      borderColor: '#fff'
+    },
+    doneBtn:{
+      marginBottom: 5,
+      paddingTop:10,
+      paddingBottom:10,
+      backgroundColor:'#3a2995',
+      borderRadius:10,
+      borderWidth: 1,
+      borderColor: '#fff'
+    },
+    btnText:{
+      color:'#fff',
+      textAlign:'center',
+      paddingLeft : 10,
+      paddingRight : 10
+    }
 });
 
 

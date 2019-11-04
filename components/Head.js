@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
 import { StyleSheet, Button, Text, View } from 'react-native';
-import { Icon } from 'react-native-elements'
-
 
 export default class Head extends Component {
 
@@ -13,20 +11,7 @@ export default class Head extends Component {
         };
       }
 
-      static navigationOptions = {
-        title: 'Hi Miho',
-        //Sets Header text of Status Bar
-        headerStyle: {
-          backgroundColor: '#f4511e',
-          //Sets Header color
-        },
-        headerTintColor: '#fff',
-        //Sets Header text color
-        headerTitleStyle: {
-          fontWeight: 'bold',
-          //Sets Header text style
-        },
-      };
+     
       componentDidMount() {
         var that = this;
         var date = new Date().getDate(); //Current Date
@@ -43,8 +28,7 @@ export default class Head extends Component {
         // var min = new Date().getMinutes(); //Current Minutes
         // var sec = new Date().getSeconds(); //Current Seconds
         that.setState({
-          day: dayNames[day]
-          ,
+          day: dayNames[day],
           date:
           monthNames[month] + ' ' +date+ ', ' + year + ' ' 
         });
@@ -63,13 +47,6 @@ export default class Head extends Component {
             {this.state.date}
           </Text>
         </View>
- 
-
-          
-
-
-
-
     );
   }
 }
@@ -77,19 +54,23 @@ export default class Head extends Component {
 const styles = StyleSheet.create({
     HeadTop: {
         width: '100%',
-        backgroundColor: 'green',
+        paddingTop: 30,
+        paddingBottom: 30,
+        backgroundColor: '#93c8f2',
         justifyContent: 'center',
         alignItems: 'center',
+        // borderBottomWidth: 1.5,
+        // borderBottomColor: '#3a2995'
     },
     today:{
         fontSize: 20,
         marginTop: 16,
-        color: '#fff',
+        color: '#3a2995',
     },
     day:{
-        fontSize: 25,
+        fontSize: 30,
         fontWeight: 'bold',
-        color: 'pink',
+        color: '#d81b60',
     }
   });
 
