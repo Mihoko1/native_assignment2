@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TextInput,TouchableOpacity, Button, Alert, ScrollView, ListView} from 'react-native';
+import { View, Image, Text, StyleSheet, TextInput,TouchableOpacity, Alert, ScrollView} from 'react-native';
 import firebase from '../firebase';
 import Head from '../components/Head';
 
@@ -95,44 +95,82 @@ export default class Home extends Component{
                 <View style={styles.checkList}>
                   {
                     (JSON.stringify(this.state.todos[todoId].done) !== 'false' ) ? (
+                      <React.Fragment>
+                        <Text style={styles.todoText, {color: 'black', width: width - 120}}>{
+                              `${JSON.stringify(this.state.todos[todoId].task).slice(1, -1)}`
+                        }</Text> 
 
-                      <Text style={styles.todoText, {color: 'black', width: width - 120}}>{
-                            `${JSON.stringify(this.state.todos[todoId].task).slice(1, -1)}`
-                      }</Text> 
+                        <View style={styles.btnContainer}>
+                        <TouchableOpacity
+                          style={styles.doneBtn}
+                          onPress={() => {
+                            this.setState({
+                                done:this.state.done
+                              }),
+                              this.update({todoId})} 
+                          }
+                          underlayColor='#fff'>
+                          
+                            <Image style={styles.imagestyle} source={require('../assets/check.png')} />
+                          
+                          {/* <Text style={styles.btnText}>Done</Text> */}
+                        </TouchableOpacity>
+    
+                        <TouchableOpacity
+                          style={styles.deleteBtn}
+                          onPress={() => {
+                            this.setState({
+                                isChecked:!this.state.isChecked,
+                                selectedId: todoId
+                              }),
+                              this.showConfirmAlert()} 
+                          }
+                          underlayColor='#fff'>
+                          <Text style={styles.btnText}>Delete</Text>
+                        </TouchableOpacity>
+                      </View>
+                      </React.Fragment>
 
                     ):(
-                        <Text style={styles.todoText, {color: '#bebebe', width: width - 120}}>{
-                          `${JSON.stringify(this.state.todos[todoId].task).slice(1, -1)}`
-                      }</Text> 
+                      <React.Fragment>
+                          <Text style={styles.todoText, {color: '#bebebe', width: width - 120}}>{
+                            `${JSON.stringify(this.state.todos[todoId].task).slice(1, -1)}`
+                        }</Text> 
+
+                        <View style={styles.btnContainer}>
+                        <TouchableOpacity
+                          style={styles.doneBtn}
+                          onPress={() => {
+                            this.setState({
+                                done:this.state.done
+                              }),
+                              this.update({todoId})} 
+                          }
+                          underlayColor='#fff'>
+                          
+                            <Image style={styles.imagestyle} source={require('../assets/checked.png')} />
+                          
+                          {/* <Text style={styles.btnText}>Done</Text> */}
+                        </TouchableOpacity>
+    
+                        <TouchableOpacity
+                          style={styles.deleteBtn}
+                          onPress={() => {
+                            this.setState({
+                                isChecked:!this.state.isChecked,
+                                selectedId: todoId
+                              }),
+                              this.showConfirmAlert()} 
+                          }
+                          underlayColor='#fff'>
+                          <Text style={styles.btnText}>Delete</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </React.Fragment>
                     )
                   }
                     
-                  <View style={styles.btnContainer}>
-                    <TouchableOpacity
-                      style={styles.doneBtn}
-                      onPress={() => {
-                        this.setState({
-                            done:this.state.done
-                          }),
-                          this.update({todoId})} 
-                      }
-                      underlayColor='#fff'>
-                      <Text style={styles.btnText}>Done</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.deleteBtn}
-                      onPress={() => {
-                        this.setState({
-                            isChecked:!this.state.isChecked,
-                            selectedId: todoId
-                          }),
-                          this.showConfirmAlert()} 
-                      }
-                      underlayColor='#fff'>
-                      <Text style={styles.btnText}>Delete</Text>
-                    </TouchableOpacity>
-                  </View>
+                 
                 </View>
               </View>
               )
@@ -235,6 +273,7 @@ const styles = StyleSheet.create({
     btnContainer:{
       marginTop: 5,
       marginBottom: 5,
+      alignItems: 'center',
     },
 
     deleteBtn:{
@@ -249,10 +288,10 @@ const styles = StyleSheet.create({
       marginBottom: 5,
       paddingTop:10,
       paddingBottom:10,
-      backgroundColor:'#3a2995',
-      borderRadius:10,
-      borderWidth: 1,
-      borderColor: '#fff'
+      // backgroundColor:'#3a2995',
+      // borderRadius:10,
+      // borderWidth: 1,
+      // borderColor: '#fff'
     },
     btnText:{
       color:'#fff',
